@@ -23,15 +23,12 @@ class TodoList extends React.Component {
 
                         {
                             item.edit ?
-                                <form onSubmit={ (e) => this.props.handleEdit(e)}>
-                                    <input type="text"/>
+                                <form onSubmit={ (e) => this.props.handleEditSubmit(e, item.id)}>
+                                    <input onChange={ (e) => this.props.handleEdit(e)} type="text"/>
                                 </form>:
                             <span onDoubleClick={ (e) => this.props.toggleEdit(e, item.id)}>
                                 {item.text}</span>
                         }
-                        <button onClick={ (e) => this.props.updateElement(e, item.id)}>
-                            Edit
-                        </button>
                         <button onClick={ (e) => this.props.removeElement(e, item.id)}>
                             Remove
                         </button>

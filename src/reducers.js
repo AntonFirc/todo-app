@@ -1,16 +1,17 @@
 import { VisibilityFilters } from './actions.js'
-import {SET_VISIBILITY_FILTER, TOGGLE_TODO, ADD_TODO, TOGGLE_EDIT} from "./actions.js";
+import {SET_VISIBILITY_FILTER, TOGGLE_TODO, EDIT_TODO, ADD_TODO, TOGGLE_EDIT} from "./actions.js";
 import {UPDATE_TEXT, RESET_TEXT, REMOVE_TODO} from "./actions.js";
 import {ADD_ACTIVE, REMOVE_ACTIVE} from "./actions.js";
+import {UPDATE_EDIT_TEXT, RESET_EDIT_TEXT} from "./actions.js";
 import { combineReducers } from 'redux'
 
-const initialState = {
+/*const initialState = {
     text: '',
     editText: '',
     visibilityFilter: VisibilityFilters.SHOW_ALL,
     todos: [],
     active_count: 0
-}
+}*/
 
 function todos(state = [], action) {
     switch (action.type) {
@@ -28,7 +29,18 @@ function todos(state = [], action) {
                 if (todo) {
                     if (todo.id === action.id) {
                         return Object.assign({}, todo, {
-                            edit: true
+                            edit: !todo.edit
+                        });
+                    }
+                    return todo;
+                }
+            });
+        case EDIT_TODO:
+            return state.map( (todo) => {
+                if (todo) {
+                    if (todo.id === action.id) {
+                        return Object.assign({}, todo, {
+                            text: action.text
                         });
                     }
                     return todo;
@@ -78,6 +90,17 @@ function inputText(state = '', action) {
     }
 }
 
+function editText(state = '', action) {
+    switch (action.type) {
+        case UPDATE_EDIT_TEXT:
+            return action.text;
+        case RESET_EDIT_TEXT:
+            return '';
+        default:
+            return state;
+    }
+}
+
 function activeCount(state = 0, action) {
     switch (action.type) {
         case ADD_ACTIVE:
@@ -93,6 +116,7 @@ const todoApp = combineReducers({
     visibilityFilter,
     todos,
     inputText,
+    editText,
     activeCount
 });
 

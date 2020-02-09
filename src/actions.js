@@ -3,6 +3,7 @@
  */
 export const ADD_TODO = 'ADD_TODO'
 export const TOGGLE_EDIT = 'TOGGLE_EDIT'
+export const EDIT_TODO = 'EDIT_TODO'
 export const TOGGLE_TODO = 'TOGGLE_TODO'
 export const REMOVE_TODO = 'REMOVE_TODO'
 export const SET_VISIBILITY_FILTER = 'SET_VISIBILITY_FILTER'
@@ -18,6 +19,9 @@ export const VisibilityFilters = {
 export const UPDATE_TEXT = 'UPDATE_TEXT'
 export const RESET_TEXT = 'RESET_TEXT'
 
+export const UPDATE_EDIT_TEXT = 'UPDATE_EDIT_TEXT'
+export const RESET_EDIT_TEXT = 'RESET_EDIT_TEXT'
+
 export const ADD_ACTIVE = 'ADD_ACTIVE'
 export const REMOVE_ACTIVE = 'REMOVE_ACTIVE'
 /*
@@ -28,6 +32,9 @@ export function addTodo(id, text, completed) {
 }
 export function toggleEdit(id) {
     return { type: TOGGLE_EDIT, id }
+}
+export function editTodo(id, text) {
+    return {type: EDIT_TODO, id, text}
 }
 export function toggleTodo(id) {
     return { type: TOGGLE_TODO, id }
@@ -43,6 +50,12 @@ export function updateInputText(text) {
 }
 export function resetInputText() {
     return {type: RESET_TEXT}
+}
+export function updateEditText(text) {
+    return {type: UPDATE_EDIT_TEXT, text}
+}
+export function resetEditText() {
+    return {type: RESET_EDIT_TEXT}
 }
 export function addActive(count) {
     return {type: ADD_ACTIVE, count}

@@ -1,3 +1,7 @@
+/**
+ * Establishes XMLHttpRequest and returns it
+ * @returns {XMLHttpRequest}
+ */
 export function setupConn () {
     let xhr = new XMLHttpRequest();
     // get a callback when the server responds
