@@ -1,8 +1,8 @@
 import React from 'react';
 import TodoApp from './TodoApp'
-import './App.css';
+import './style/style.css';
 import { createStore } from 'redux';
-import todoApp from './reducers';
+import todoApp from './components/reducers';
 
 const store = createStore(todoApp);
 

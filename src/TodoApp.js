@@ -6,7 +6,7 @@ import {
     resetInputText, updateInputText,
     VisibilityFilters, setVisibilityFilter,
     addActive, removeActive, editTodo, toggleEdit, updateEditText
-} from "./actions";
+} from "./components/actions";
 import {setupConn} from "./utility";
 
 class TodoApp extends React.Component {
@@ -21,6 +21,7 @@ class TodoApp extends React.Component {
         this.toggleEdit = this.toggleEdit.bind(this);
         this.handleEdit = this.handleEdit.bind(this);
         this.handleEditSubmit = this.handleEditSubmit.bind(this);
+        this.markAllDone = this.markAllDone.bind(this);
         this.fetchTodos();
         this.getState = () => this.props.store.getState();
         this.dispatch = (message) => this.props.store.dispatch(message);
@@ -36,9 +37,9 @@ class TodoApp extends React.Component {
                 // jsonData is parsed json object received from url
                 console.log("Got " + jsonData.length + " entries from DB");
                 jsonData.forEach( (item) => {
-                    this.props.store.dispatch(addTodo(item.id, item.text, item.completed));
+                    this.dispatch(addTodo(item.id, item.text, item.completed));
                     if (item.completed) {
-                        this.props.store.dispatch(addActive(this.getState().activeCount));
+                        this.dispatch(addActive(this.getState().activeCount));
                     }
                     this.forceUpdate();
                 });
@@ -61,10 +62,10 @@ class TodoApp extends React.Component {
         let removed = this.getState().todos.find( (item) => item.id === id);
         //if removed item was marked as completed, update completed counter
         if (removed.completed) {
-            this.props.store.dispatch(removeActive(this.getState().activeCount));
+            this.dispatch(removeActive(this.getState().activeCount));
         }
         //remove item from app state
-        this.props.store.dispatch(removeTodo(id));
+        this.dispatch(removeTodo(id));
         this.forceUpdate();
         //write changes into DB
         let xhr = utils.setupConn();
@@ -75,19 +76,23 @@ class TodoApp extends React.Component {
     /**
      * Marks todos item as completed or active depending on its actual state. Stores new item state into database.
      * @param e javascript change event
-     * @param id id of item that was (un)assigned as completed
+     * @param item item that was (un)assigned as completed
      */
-    changeComplete(e, id) {
-        this.props.store.dispatch(toggleTodo(id));
+    changeComplete(e, item) {
+        //e.preventDefault();
+        console.log(item.id);
+        this.dispatch(toggleTodo(item.id));
+        console.log(this.getState());
         let xhr = utils.setupConn();
         // mark as completed or active (respectively) in database according to actual state
-        if (e.target.checked) {
-            xhr.open('POST', "http://localhost:8080/todos/"+id+"/complete");
-            this.props.store.dispatch(addActive(this.getState().activeCount));
+        console.log(item.completed);
+        if (!item.completed) {
+            xhr.open('POST', "http://localhost:8080/todos/"+item.id+"/complete");
+            this.dispatch(addActive(this.getState().activeCount));
         }
         else {
-            xhr.open('POST', "http://localhost:8080/todos/"+id+"/incomplete");
-            this.props.store.dispatch(removeActive(this.getState().activeCount));
+            xhr.open('POST', "http://localhost:8080/todos/"+item.id+"/incomplete");
+            this.dispatch(removeActive(this.getState().activeCount));
         }
         xhr.send();
         this.forceUpdate();
@@ -133,8 +138,8 @@ class TodoApp extends React.Component {
             console.log(xhr.responseText);
             //get item inserted into DB with generated ID and other attributes
             let newItem = JSON.parse(xhr.responseText);
-            this.props.store.dispatch(resetInputText());
-            this.props.store.dispatch(addTodo(newItem.id, newItem.text, newItem.completed));
+            this.dispatch(resetInputText());
+            this.dispatch(addTodo(newItem.id, newItem.text, newItem.completed));
             this.forceUpdate();
         });
         xhr.open('POST', "http://localhost:8080/todos/");   // open the request with the verb and the url
@@ -183,43 +188,84 @@ class TodoApp extends React.Component {
         xhr.send(JSON.stringify(DBItem));   // send the request
     }
 
+    /**
+     * Cycles trough all todos and marks all active as done
+     * @param e javascript click event
+     */
+    markAllDone(e) {
+        e.preventDefault();
+        this.getState().todos.map( (todo) => {
+            if (!todo.completed) {
+                this.dispatch(toggleTodo(todo.id));
+                let xhr = utils.setupConn();
+                xhr.open('POST', "http://localhost:8080/todos/"+todo.id+"/complete");
+                this.dispatch(addActive(this.getState().activeCount));
+                xhr.send();
+                this.forceUpdate();
+            }
+        });
+        this.forceUpdate();
+    }
+
+    /**
+     * Cycles trough all todos and removes completed ones
+     * @param e javascript click event
+     */
+    removeDone(e) {
+        e.preventDefault();
+        this.getState().todos.map( (todo) => {
+            if (todo.completed) {
+                this.dispatch(removeTodo(todo.id));
+                let xhr = utils.setupConn();
+                xhr.open('DELETE', "http://localhost:8080/todos/"+todo.id);
+                xhr.send();
+                this.forceUpdate();
+            }
+        });
+    }
+
     render() {
         return (
-            <div>
-                <h3>TODO List</h3>
-                <form onSubmit={this.handleSubmit}>
-                    <label htmlFor="new-todo">
-                        What needs to be done?
-                    </label>
+            <div className="content">
+                <span className="app-heading">TODO List</span>
+                <form className="todo-creator" onSubmit={this.handleSubmit}>
                     <input
                         id="new-todo"
                         onChange={this.handleChange}
-                        value={this.props.store.getState().inputText}
+                        value={this.getState().inputText}
+                        placeholder="What needs to be done?"
                     />
-                    <button>
-                        Add #{this.getState().todos.length + 1}
-                    </button>
                 </form>
+                <div className="controls">
+                    <button onClick={ (e) => this.markAllDone(e)}>Yay, all done!</button>
+                    <button onClick={ (e) => this.removeDone(e)}>Remove done.</button>
+                </div>
                 <TodoList store={this.props.store}
                           changeComplete={this.changeComplete}
-                          updateElement={this.updateElement}
                           removeElement={this.removeElement}
                           toggleEdit={this.toggleEdit}
                           handleEdit={this.handleEdit}
                           handleEditSubmit={this.handleEditSubmit}/>
-                <div>
-                    <span>{this.getState().activeCount}</span>
-                    <button onClick={ (e) => this.changeVisibility(e, VisibilityFilters.SHOW_ALL)}>
+                <span className="finished">
+                    {this.getState().activeCount} of {this.getState().todos.length} tasks completed, YAY !
+                </span>
+                <div className="visibility-filters">
+                    <span>Show:</span>
+                    <button onClick={ (e) =>
+                        this.changeVisibility(e, VisibilityFilters.SHOW_ALL)}>
                         All
                     </button>
-                    <button onClick={ (e) => this.changeVisibility(e, VisibilityFilters.SHOW_ACTIVE)}>
+                    <button onClick={ (e) =>
+                        this.changeVisibility(e, VisibilityFilters.SHOW_ACTIVE)}>
                         Active
                     </button>
-                    <button onClick={ (e) => this.changeVisibility(e, VisibilityFilters.SHOW_COMPLETED)}>
+                    <button onClick={ (e) =>
+                        this.changeVisibility(e, VisibilityFilters.SHOW_COMPLETED)}>
                         Completed
                     </button>
                 </div>
             </div>
+
         );
     }
 }

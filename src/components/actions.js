@@ -24,6 +24,7 @@ export const RESET_EDIT_TEXT = 'RESET_EDIT_TEXT'
 
 export const ADD_ACTIVE = 'ADD_ACTIVE'
 export const REMOVE_ACTIVE = 'REMOVE_ACTIVE'
+
 /*
  * action creators
  */

@@ -47,11 +47,12 @@ function todos(state = [], action) {
                 }
             });
         case TOGGLE_TODO:
+            console.log("here we are");
             return state.map( (todo) => {
                 if (todo) {
                     if (todo.id === action.id) {
                         return Object.assign({}, todo, {
-                            completed: !state.completed
+                            completed: !todo.completed
                         });
                     }
                     return todo;
