@@ -9,10 +9,13 @@ import {
 } from "./components/actions";
 import {setupConn} from "./utility";
 
+/**
+ * Main class handling application behavior and frontend structure
+ */
 class TodoApp extends React.Component {
     constructor(props) {
         super(props);
-        const unsubscribe = this.props.store.subscribe( () => {});
+        this.props.store.subscribe( () => {});
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.removeElement = this.removeElement.bind(this);
@@ -36,13 +39,14 @@ class TodoApp extends React.Component {
             .then((jsonData) => {
                 // jsonData is parsed json object received from url
                 console.log("Got " + jsonData.length + " entries from DB");
-                jsonData.forEach( (item) => {
+                for (let i = jsonData.length-1; i >= 0; i--) {
+                    let item = jsonData[i];
                     this.dispatch(addTodo(item.id, item.text, item.completed));
                     if (item.completed) {
                         this.dispatch(addActive(this.getState().activeCount));
                     }
-                    this.forceUpdate();
-                });
+                }
+                this.forceUpdate();
             })
             .catch( (error) => {
                 // fetch failed, print error message
@@ -79,13 +83,9 @@ class TodoApp extends React.Component {
      * @param item item that was (un)assigned as completed
      */
     changeComplete(e, item) {
-        //e.preventDefault();
-        console.log(item.id);
         this.dispatch(toggleTodo(item.id));
-        console.log(this.getState());
         let xhr = utils.setupConn();
         // mark as completed or active (respectively) in database according to actual state
-        console.log(item.completed);
         if (!item.completed) {
             xhr.open('POST', "http://localhost:8080/todos/"+item.id+"/complete");
             this.dispatch(addActive(this.getState().activeCount));
@@ -96,7 +96,6 @@ class TodoApp extends React.Component {
         }
         xhr.send();
         this.forceUpdate();
-        console.log(this.state);
     }
 
     /**
@@ -148,13 +147,15 @@ class TodoApp extends React.Component {
     }
 
     /**
-     * Marks item as "in edit" to show textbox input
+     * Marks item as "in edit" to show textbox input and stores input value into state variable
      * @param e javascript doubleclick action
      * @param id id of clicked todos item
+     * @param text text of edited todos item
      */
-    toggleEdit(e, id) {
+    toggleEdit(e, id, text) {
         e.preventDefault();
         this.dispatch(toggleEdit(id));
+        this.dispatch(updateEditText(text));
         this.forceUpdate();
     }
 
@@ -195,7 +196,7 @@ class TodoApp extends React.Component {
     markAllDone(e) {
         e.preventDefault();
         this.getState().todos.map( (todo) => {
-            if (!todo.completed) {
+            if (!todo.completed && this.getState().visibilityFilter !== VisibilityFilters.SHOW_COMPLETED) {
                 this.dispatch(toggleTodo(todo.id));
                 let xhr = utils.setupConn();
                 xhr.open('POST', "http://localhost:8080/todos/"+todo.id+"/complete");
@@ -216,6 +217,7 @@ class TodoApp extends React.Component {
         this.getState().todos.map( (todo) => {
             if (todo.completed) {
                 this.dispatch(removeTodo(todo.id));
+                this.dispatch(removeActive(this.getState().activeCount));
                 let xhr = utils.setupConn();
                 xhr.open('DELETE', "http://localhost:8080/todos/"+todo.id);
                 xhr.send();
@@ -237,8 +239,8 @@ class TodoApp extends React.Component {
                     />
                 </form>
                 <div className="controls">
-                    <button onClick={ (e) => this.markAllDone(e)}>Yay, all done!</button>
-                    <button onClick={ (e) => this.removeDone(e)}>Remove done.</button>
+                    <button onClick={ (e) => this.markAllDone(e)}>All done!</button>
+                    <button onClick={ (e) => this.removeDone(e)}>Remove done</button>
                 </div>
                 <TodoList store={this.props.store}
                           changeComplete={this.changeComplete}
@@ -264,8 +266,14 @@ class TodoApp extends React.Component {
                         Completed
                     </button>
                 </div>
+                <p className="app-info">
+                    Press enter to submit new todo.<br/>
+                    Double-click to edit todo.<br/>
+                    <span className="author">Created by <a target="_blank"
+                                                           href="https://github.com/DeeMaxSVK"
+                                                           rel="noopener noreferrer">Anton Firc</a></span>
+                </p>
             </div>
-
         );
     }
 }

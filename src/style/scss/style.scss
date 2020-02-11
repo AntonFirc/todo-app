@@ -1,18 +1,27 @@
+@import "variables";
+@import "mixins";
+@import "elements";
+
 @import url('https://fonts.googleapis.com/css?family=Indie+Flower|Open+Sans:400,700&display=swap');
 
 body {
   background: #e9e9e9;
-  font-family: 'Open Sans', sans-serif;
+  font-family: $font-primary;
 }
 
 .content {
-  max-width: 600px;
+  max-width: $app-width;
   margin-left: auto;
   margin-right: auto;
 
   display: flex;
   flex-direction: column;
   justify-content: center;
+
+  @media screen and (max-width: $app-width) {
+    padding: 0 16px;
+    margin-bottom: 50px;
+  }
 }
 
 .app-heading {
@@ -20,7 +29,8 @@ body {
   font-size: 60px;
   color: rgba(252, 190, 3, 0.8);
   font-weight: bold;
-  font-family: 'Indie Flower',sans-serif;
+  font-family: $font-secondary;
+  margin: 32px 0;
 }
 
 .todo-creator {
@@ -34,6 +44,26 @@ body {
     padding: 8px;
     font-size: 18px;
     background: rgba(255,255,255,0.5);
+
+    @include shadow();
+  }
+}
+
+div.controls {
+  display: flex;
+  justify-content: space-between;
+
+  margin-top: 16px;
+
+  button {
+    padding: 8px;
+    border: 1px solid black;
+    border-radius: 4px;
+    opacity: 0.5;
+
+    &:hover {
+      background: rgba(252, 190, 3, 0.5);
+    }
   }
 }
 
@@ -41,14 +71,17 @@ ul.todos {
   list-style: none;
 
   padding-left: 0;
+  margin-top: 16px;
 
   border-left: 1px solid rgba(0,0,0,0.2);
   border-right: 1px solid rgba(0,0,0,0.2);
   border-top: 1px solid rgba(0,0,0,0.2);
   border-radius: 4px;
 
+  @include shadow();
+
   li {
-    font-family: 'Indie Flower',sans-serif;
+    font-family: $font-secondary;
     font-size: 34px;
 
     display: flex;
@@ -60,14 +93,91 @@ ul.todos {
 
     padding: 4px 8px;
 
+    div.checked {
+      width: 16px;
+      height: 16px;
+
+      &:before {
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+        border-radius: 4px;
+        visibility: visible;
+      }
+
+      &.active {
+        &:before {
+          content: " ";
+          background-color: $checkbox-not-done;
+          border: 1px solid $checkbox-done;
+          display: inherit;
+        }
+      }
+
+      &.done {
+        &:before {
+          font-family: "Font Awesome 5 Pro";
+          content: "\f00c";
+
+          background-color: $checkbox-done;
+          border: 1px solid $checkbox-done;
+
+          display: flex;
+          justify-content: center;
+          align-items: center;
+
+          color: white;
+          font-size: 12px;
+          font-weight: 600;
+          text-align: center;
+        }
+      }
+    }
+
+    form {
+      width: calc(100% - 32px);
+      display: flex;
+      padding: 0 16px;
+
+      input[type=text] {
+        width: calc(100% - 32px);
+
+        font-size: 32px;
+        font-family: $font-secondary;
+
+        border-radius: 4px;
+
+        padding-left: 8px;
+        padding-bottom: 2px;
+
+        &:focus {
+          border: none;
+        }
+      }
+    }
+
+
     span {
       opacity: 0.5;
+      cursor: pointer;
+
+      width: calc(100% - 32px);
+      padding-left: 16px;
+
+      &.completed {
+        text-decoration: line-through;
+        opacity: 0.2;
+      }
     }
 
     i {
       cursor: pointer;
+
       font-size: 16px;
       color: #fe9a9a;
+
+      width: 16px;
+      height: 16px;
     }
   }
 
@@ -75,8 +185,10 @@ ul.todos {
 
 .finished {
   flex-basis: 100%;
+
   font-size: 14px;
   text-align: center;
+
   opacity: 0.7;
 }
 
@@ -90,13 +202,28 @@ ul.todos {
   margin-top: 16px;
 
   button {
-    -webkit-appearance: none;
-    border: 0;
-    background: none;
-    cursor: pointer;
-
     &:hover {
       text-decoration: underline;
+    }
+  }
+}
+
+.app-info {
+  opacity: 0.5;
+
+  font-size: 10px;
+  line-height: 12px;
+  text-align: center;
+
+  margin-top: 25px;
+
+  .author {
+    margin-top: 8px;
+
+    display: block;
+
+    a {
+      color: black;
     }
   }
 }

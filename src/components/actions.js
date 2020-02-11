@@ -55,9 +55,6 @@ export function resetInputText() {
 export function updateEditText(text) {
     return {type: UPDATE_EDIT_TEXT, text}
 }
-export function resetEditText() {
-    return {type: RESET_EDIT_TEXT}
-}
 export function addActive(count) {
     return {type: ADD_ACTIVE, count}
 }
